@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "huawei-cloud-ml-lab"
+version = "0.1.0"
+description = "Policy-checked Huawei Cloud ML deployment planning toolkit"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "Çağatay Kavas"}]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.4,<9", "pyyaml>=6.0,<7", "ruff>=0.12,<1"]
+
+[project.scripts]
+huawei-ml-plan = "cloud_lab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]

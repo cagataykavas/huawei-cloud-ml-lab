@@ -1,5 +1,9 @@
 # Huawei Cloud ML Lab
 
+A runnable policy and deployment-planning toolkit for taking an ML inference workload to Huawei
+Cloud. It turns architecture claims into validated configuration, an auditable service plan,
+security-aware CCE manifests and a FunctionGraph-compatible OBS event boundary.
+
 A vendor-specific reference architecture for running the same ML workload on Huawei Cloud.
 
 ```mermaid
@@ -30,3 +34,45 @@ flowchart LR
 - IAM, KMS and Cloud Eye for security/observability
 
 The codebase mirrors the AWS, GCP and Azure platform variants so vendor translation is explicit rather than hand-wavy.
+
+## What works
+
+- typed JSON deployment configuration with unknown/missing-key rejection
+- production gates for private databases, KMS, HA, backups, replicas and autoscaling
+- deterministic mapping from workload requirements to Huawei Cloud services
+- CCE Deployment and HPA manifests with non-root/read-only security controls
+- FunctionGraph-compatible normalization of OBS object events
+- dev and production configuration examples
+- CLI failure code when a plan violates blocking policies
+- Python 3.11–3.13 CI, manifest validation, tests and wheel build
+
+## Run it
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -e '.[dev]'
+ruff check .
+pytest
+python scripts/validate_manifests.py
+huawei-ml-plan configs/prod.json
+```
+
+`deployable: false` makes the CLI exit with code `2` unless
+`--allow-policy-errors` is supplied. Warnings remain visible without blocking development
+environments.
+
+## Policy examples
+
+| Code | Severity in prod | Control |
+|---|---:|---|
+| `NET001` | error | RDS/GaussDB must be private |
+| `ENC001` | error | model/data artifacts require KMS |
+| `HA001` | error | at least three inference replicas |
+| `HA002` | error | highly available database |
+| `DR001` | error | at least seven days of backups |
+| `SCALE001` | error | CCE autoscaling enabled |
+
+The repository does not claim that a local validator provisions cloud resources. It makes the
+deployment contract reviewable and testable before provider credentials or Terraform state are
+introduced.

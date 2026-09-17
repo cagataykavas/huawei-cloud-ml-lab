@@ -1,0 +1,16 @@
+{
+  "name": "fraud-risk-prod",
+  "environment": "prod",
+  "region": "tr-west-1",
+  "replicas": 3,
+  "model_uri": "obs://ml-artifacts-prod/fraud-risk/model.onnx",
+  "model_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "kms_key_id": "kms-prod-ml-artifacts",
+  "database_private": true,
+  "database_high_availability": true,
+  "backup_retention_days": 14,
+  "autoscaling_enabled": true,
+  "min_replicas": 3,
+  "max_replicas": 12,
+  "public_api": true
+}
