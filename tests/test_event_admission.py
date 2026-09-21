@@ -1,6 +1,7 @@
 import json
 
 import pytest
+
 from cloud_lab.event_admission import AdmissionPolicy, InMemoryClaimStore, admit_obs_event
 
 
