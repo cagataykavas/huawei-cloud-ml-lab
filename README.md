@@ -76,3 +76,19 @@ environments.
 The repository does not claim that a local validator provisions cloud resources. It makes the
 deployment contract reviewable and testable before provider credentials or Terraform state are
 introduced.
+
+
+## Idempotent OBS event admission
+
+OBS notifications and FunctionGraph retries are treated as at-least-once delivery. `cloud_lab.event_admission` derives a stable SHA-256 event identity from the bucket, decoded object key, event name and immutable `versionId` or `eTag`, then claims it through an atomic storage boundary before downstream work starts.
+
+```python
+from cloud_lab.event_admission import InMemoryClaimStore, admit_obs_event
+
+report = admit_obs_event(event, InMemoryClaimStore(), now=1_800_000_000.0)
+assert report["accepted"] == 1
+```
+
+The admission layer rejects unsupported event types, missing object identities, oversized batches and duplicates inside the same notification. Replayed notifications produce an explicit `duplicate` decision instead of scheduling the job again. Reports are deterministic and JSON-ready for logs or audit evidence.
+
+`InMemoryClaimStore` is only a thread-safe local reference implementation. Production deployments must back the `ClaimStore` protocol with a shared store whose claim is one atomic conditional write and whose retention exceeds the provider retry window. A read-then-write implementation is race-prone. Expired claims permit reprocessing, so downstream side effects should still use object-version-aware writes or transactions where available.
