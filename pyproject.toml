@@ -10,13 +10,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "Çağatay Kavas"}]
-dependencies = []
+dependencies = ["pyyaml>=6.0,<7"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.4,<9", "pyyaml>=6.0,<7", "ruff>=0.12,<1"]
+dev = ["pytest>=8.4,<9", "ruff>=0.12,<1"]
 
 [project.scripts]
 huawei-ml-plan = "cloud_lab.cli:main"
+huawei-release-audit = "cloud_lab.release_contract:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
