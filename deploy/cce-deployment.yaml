@@ -4,6 +4,11 @@ metadata:
   name: fraud-risk-inference
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
   selector:
     matchLabels:
       app: fraud-risk-inference
@@ -19,7 +24,15 @@ spec:
           type: RuntimeDefault
       containers:
         - name: api
-          image: swr.example.com/ml/fraud-risk:0.1.0
+          # Fixture digest for this runnable lab; production pipelines must inject a verified SWR digest.
+          image: swr.example.com/ml/fraud-risk@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          env:
+            - name: MODEL_URI
+              value: obs://ml-artifacts-prod/fraud-risk/model.onnx
+            - name: MODEL_SHA256
+              value: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+            - name: KMS_KEY_ID
+              value: kms-prod-ml-artifacts
           ports:
             - containerPort: 8000
           readinessProbe:

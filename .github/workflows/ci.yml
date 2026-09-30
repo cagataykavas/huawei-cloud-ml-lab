@@ -25,6 +25,15 @@ jobs:
       - run: ruff check .
       - run: pytest
       - run: python scripts/validate_manifests.py
+      - name: Reconcile approved config with rendered CCE manifests
+        run: |
+          huawei-release-audit \
+            --config configs/prod.json \
+            --deployment deploy/cce-deployment.yaml \
+            --hpa deploy/cce-hpa.yaml \
+            --allowed-registry swr.example.com/ml/ \
+            --output /tmp/release-contract.json
+          python -m json.tool /tmp/release-contract.json
       - run: huawei-ml-plan configs/prod.json > /tmp/prod-plan.json
       - run: python -m json.tool /tmp/prod-plan.json
       - run: huawei-ml-plan configs/dev.json > /tmp/dev-plan.json
