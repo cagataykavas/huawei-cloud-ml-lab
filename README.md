@@ -42,6 +42,7 @@ The codebase mirrors the AWS, GCP and Azure platform variants so vendor translat
 - deterministic mapping from workload requirements to Huawei Cloud services
 - CCE Deployment and HPA manifests with non-root/read-only security controls
 - FunctionGraph-compatible normalization of OBS object events
+- streaming SHA-256 verification of downloaded model artifacts before deployment
 - dev and production configuration examples
 - CLI failure code when a plan violates blocking policies
 - Python 3.11–3.13 CI, manifest validation, tests and wheel build
@@ -57,6 +58,26 @@ pytest
 python scripts/validate_manifests.py
 huawei-ml-plan configs/prod.json
 ```
+
+Verify that a downloaded artifact matches the immutable digest approved in the
+deployment configuration:
+
+```bash
+huawei-ml-verify-model configs/prod.json /models/model.onnx
+```
+
+The verifier reads through one file descriptor, refuses symbolic links and
+non-regular files, enforces a configurable byte ceiling, and checks file identity,
+size and modification time before and after hashing. A digest mismatch or policy
+violation exits with code `2`; malformed configuration and access failures exit
+with code `3`. The JSON evidence is deterministic and contains model identity,
+digests, byte counts and bounded reason codes without copying model bytes.
+
+Digest equality proves byte identity with the reviewed configuration; it does not
+prove that the configuration was authorized, that the model is safe, or that the
+same file will be loaded after verification. Production deployment should sign the
+configuration and perform verification in the same init/startup boundary that
+opens the model for inference.
 
 `deployable: false` makes the CLI exit with code `2` unless
 `--allow-policy-errors` is supplied. Warnings remain visible without blocking development
