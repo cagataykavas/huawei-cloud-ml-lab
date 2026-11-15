@@ -42,6 +42,7 @@ The codebase mirrors the AWS, GCP and Azure platform variants so vendor translat
 - deterministic mapping from workload requirements to Huawei Cloud services
 - CCE Deployment and HPA manifests with non-root/read-only security controls
 - FunctionGraph-compatible normalization of OBS object events
+- multi-window SLO burn-rate evaluation with strict telemetry coverage
 - dev and production configuration examples
 - CLI failure code when a plan violates blocking policies
 - Python 3.11–3.13 CI, manifest validation, tests and wheel build
@@ -57,6 +58,11 @@ pytest
 python scripts/validate_manifests.py
 huawei-ml-plan configs/prod.json
 ```
+
+For an incident-oriented CI gate over exported request/error buckets, run
+`huawei-slo-evaluate evidence.json`. It pairs 5-minute/1-hour and 30-minute/6-hour burn windows,
+rejects telemetry gaps, and distinguishes low traffic from healthy service. See
+[`docs/slo-burn-rate.md`](docs/slo-burn-rate.md) for the evidence contract and limitations.
 
 `deployable: false` makes the CLI exit with code `2` unless
 `--allow-policy-errors` is supplied. Warnings remain visible without blocking development
