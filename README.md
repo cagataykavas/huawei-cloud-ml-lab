@@ -40,7 +40,9 @@ The codebase mirrors the AWS, GCP and Azure platform variants so vendor translat
 - typed JSON deployment configuration with unknown/missing-key rejection
 - production gates for private databases, KMS, HA, backups, replicas and autoscaling
 - deterministic mapping from workload requirements to Huawei Cloud services
-- CCE Deployment and HPA manifests with non-root/read-only security controls
+- CCE Deployment, HPA and disruption-budget manifests with non-root/read-only controls
+- a tested availability contract for fail-closed three-zone spread, bounded rolling updates and
+  selector-safe voluntary disruption
 - FunctionGraph-compatible normalization of OBS object events
 - dev and production configuration examples
 - CLI failure code when a plan violates blocking policies
@@ -76,3 +78,18 @@ environments.
 The repository does not claim that a local validator provisions cloud resources. It makes the
 deployment contract reviewable and testable before provider credentials or Terraform state are
 introduced.
+
+## CCE availability contract
+
+`scripts/validate_manifests.py` evaluates the Deployment, HPA and PodDisruptionBudget together
+instead of checking each YAML file in isolation. The checked-in production example requires:
+
+- at least three desired replicas and an HPA floor that cannot reduce that baseline;
+- a `policy/v1` disruption budget that preserves all but one desired replica;
+- an explicit rolling update with at most one unavailable pod and positive surge capacity;
+- a hard (`DoNotSchedule`) zone-spread constraint with `maxSkew: 1` and three eligible domains;
+- identical workload selectors across the Deployment, spread constraint and disruption budget.
+
+The three-domain rule intentionally fails scheduling closed when a cluster cannot provide the
+reviewed fault-domain envelope. A PDB only governs voluntary disruption; it cannot prevent node,
+zone or application failure, so live CCE capacity and eviction drills remain deployment-time work.

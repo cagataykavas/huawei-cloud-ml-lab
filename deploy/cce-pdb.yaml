@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fraud-risk-inference
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: fraud-risk-inference

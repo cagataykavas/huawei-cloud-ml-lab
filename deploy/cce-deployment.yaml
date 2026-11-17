@@ -4,6 +4,11 @@ metadata:
   name: fraud-risk-inference
 spec:
   replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
   selector:
     matchLabels:
       app: fraud-risk-inference
@@ -13,6 +18,14 @@ spec:
         app: fraud-risk-inference
     spec:
       serviceAccountName: fraud-risk-inference
+      topologySpreadConstraints:
+        - maxSkew: 1
+          minDomains: 3
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: fraud-risk-inference
       securityContext:
         runAsNonRoot: true
         seccompProfile:
