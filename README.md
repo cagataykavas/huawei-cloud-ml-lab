@@ -37,7 +37,8 @@ The codebase mirrors the AWS, GCP and Azure platform variants so vendor translat
 
 ## What works
 
-- typed JSON deployment configuration with unknown/missing-key rejection
+- typed JSON deployment configuration with strict runtime types, capacity-envelope consistency and
+  unknown/missing-key rejection
 - production gates for private databases, KMS, HA, backups, replicas and autoscaling
 - deterministic mapping from workload requirements to Huawei Cloud services
 - CCE Deployment and HPA manifests with non-root/read-only security controls

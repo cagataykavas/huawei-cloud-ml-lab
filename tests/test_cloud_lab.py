@@ -40,7 +40,7 @@ def test_valid_production_config_has_no_errors():
 @pytest.mark.parametrize(
     "change,code",
     [
-        ({"replicas": 2}, "HA001"),
+        ({"replicas": 2, "min_replicas": 2}, "HA001"),
         ({"database_high_availability": False}, "HA002"),
         ({"backup_retention_days": 3}, "DR001"),
         ({"autoscaling_enabled": False}, "SCALE001"),
@@ -82,6 +82,37 @@ def test_config_rejects_unknown_keys():
 def test_config_rejects_non_obs_model_uri():
     with pytest.raises(ValueError, match="obs"):
         DeploymentConfig.from_dict(valid_values(model_uri="https://example.com/model"))
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("name", 123),
+        ("replicas", True),
+        ("replicas", "3"),
+        ("backup_retention_days", False),
+        ("database_private", 1),
+        ("database_high_availability", "true"),
+        ("autoscaling_enabled", 1),
+        ("public_api", 0),
+        ("kms_key_id", 42),
+        ("kms_key_id", ""),
+    ],
+)
+def test_config_rejects_values_that_do_not_match_runtime_types(field, value):
+    with pytest.raises(TypeError, match=field):
+        DeploymentConfig.from_dict(valid_values(**{field: value}))
+
+
+@pytest.mark.parametrize("replicas", [2, 11])
+def test_config_rejects_desired_replicas_outside_capacity_envelope(replicas):
+    with pytest.raises(ValueError, match="envelope"):
+        DeploymentConfig.from_dict(valid_values(replicas=replicas, min_replicas=3, max_replicas=10))
+
+
+def test_config_rejects_noncanonical_model_digest():
+    with pytest.raises(ValueError, match="canonical lowercase"):
+        DeploymentConfig.from_dict(valid_values(model_sha256="A" * 64))
 
 
 def test_config_loads_json(tmp_path):
