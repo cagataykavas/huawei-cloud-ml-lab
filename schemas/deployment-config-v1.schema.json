@@ -1,0 +1,94 @@
+{
+  "$id": "https://raw.githubusercontent.com/cagataykavas/huawei-cloud-ml-lab/main/schemas/deployment-config-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Editor and pre-submit checks for DeploymentConfig. Runtime validation remains authoritative for cross-field replica-envelope consistency and deployment policy.",
+  "properties": {
+    "autoscaling_enabled": {
+      "type": "boolean"
+    },
+    "backup_retention_days": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "database_high_availability": {
+      "type": "boolean"
+    },
+    "database_private": {
+      "type": "boolean"
+    },
+    "environment": {
+      "enum": [
+        "dev",
+        "staging",
+        "prod"
+      ],
+      "type": "string"
+    },
+    "kms_key_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "pattern": ".*\\S.*",
+          "type": "string"
+        }
+      ]
+    },
+    "max_replicas": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "min_replicas": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "model_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "model_uri": {
+      "pattern": "^obs://",
+      "type": "string"
+    },
+    "name": {
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "public_api": {
+      "type": "boolean"
+    },
+    "region": {
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "replicas": {
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "name",
+    "environment",
+    "region",
+    "replicas",
+    "model_uri",
+    "model_sha256",
+    "kms_key_id",
+    "database_private",
+    "database_high_availability",
+    "backup_retention_days",
+    "autoscaling_enabled",
+    "min_replicas",
+    "max_replicas",
+    "public_api"
+  ],
+  "title": "Huawei Cloud ML deployment configuration",
+  "type": "object",
+  "x-runtime-invariants": [
+    "min_replicas <= replicas <= max_replicas",
+    "max_replicas >= min_replicas"
+  ],
+  "x-schema-version": 1
+}
