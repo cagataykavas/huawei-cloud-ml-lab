@@ -26,6 +26,35 @@ class DeploymentConfig:
     public_api: bool
 
     def __post_init__(self) -> None:
+        string_fields = ("name", "environment", "region", "model_uri", "model_sha256")
+        for field_name in string_fields:
+            if not isinstance(getattr(self, field_name), str):
+                raise TypeError(f"{field_name} must be a string")
+
+        integer_fields = (
+            "replicas",
+            "backup_retention_days",
+            "min_replicas",
+            "max_replicas",
+        )
+        for field_name in integer_fields:
+            if type(getattr(self, field_name)) is not int:
+                raise TypeError(f"{field_name} must be an integer")
+
+        boolean_fields = (
+            "database_private",
+            "database_high_availability",
+            "autoscaling_enabled",
+            "public_api",
+        )
+        for field_name in boolean_fields:
+            if type(getattr(self, field_name)) is not bool:
+                raise TypeError(f"{field_name} must be a boolean")
+
+        if self.kms_key_id is not None and (
+            not isinstance(self.kms_key_id, str) or not self.kms_key_id.strip()
+        ):
+            raise TypeError("kms_key_id must be null or a non-empty string")
         if not self.name.strip() or not self.region.strip():
             raise ValueError("name and region are required")
         if self.environment not in {"dev", "staging", "prod"}:
@@ -34,14 +63,16 @@ class DeploymentConfig:
             raise ValueError("replica counts must be positive")
         if self.max_replicas < self.min_replicas:
             raise ValueError("max_replicas must be >= min_replicas")
+        if not self.min_replicas <= self.replicas <= self.max_replicas:
+            raise ValueError("replicas must be within the min_replicas/max_replicas envelope")
         if self.backup_retention_days < 0:
             raise ValueError("backup_retention_days must be non-negative")
         if not self.model_uri.startswith("obs://"):
             raise ValueError("model_uri must use obs://")
         if len(self.model_sha256) != 64 or any(
-            character not in "0123456789abcdef" for character in self.model_sha256.lower()
+            character not in "0123456789abcdef" for character in self.model_sha256
         ):
-            raise ValueError("model_sha256 must be a 64-character hexadecimal digest")
+            raise ValueError("model_sha256 must be a canonical lowercase SHA-256 digest")
 
     @classmethod
     def from_dict(cls, values: dict[str, Any]) -> DeploymentConfig:
