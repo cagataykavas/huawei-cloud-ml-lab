@@ -13,10 +13,11 @@ authors = [{name = "Çağatay Kavas"}]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.4,<9", "pyyaml>=6.0,<7", "ruff>=0.12,<1"]
+dev = ["jsonschema>=4.23,<5", "pytest>=8.4,<9", "pyyaml>=6.0,<7", "ruff>=0.12,<1"]
 
 [project.scripts]
 huawei-ml-plan = "cloud_lab.cli:main"
+huawei-ml-schema = "cloud_lab.schema:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

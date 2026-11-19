@@ -39,6 +39,7 @@ The codebase mirrors the AWS, GCP and Azure platform variants so vendor translat
 
 - typed JSON deployment configuration with strict runtime types, capacity-envelope consistency and
   unknown/missing-key rejection
+- versioned Draft 2020-12 JSON Schema generated from the same field and scalar constraints
 - production gates for private databases, KMS, HA, backups, replicas and autoscaling
 - deterministic mapping from workload requirements to Huawei Cloud services
 - CCE Deployment and HPA manifests with non-root/read-only security controls
@@ -57,11 +58,24 @@ ruff check .
 pytest
 python scripts/validate_manifests.py
 huawei-ml-plan configs/prod.json
+huawei-ml-schema --check schemas/deployment-config-v1.schema.json
 ```
 
 `deployable: false` makes the CLI exit with code `2` unless
 `--allow-policy-errors` is supplied. Warnings remain visible without blocking development
 environments.
+
+## Deployment configuration schema
+
+[`schemas/deployment-config-v1.schema.json`](schemas/deployment-config-v1.schema.json) provides
+editor completion and pre-submit validation without cloud credentials. Regenerate it with
+`huawei-ml-schema --output schemas/deployment-config-v1.schema.json`; CI rejects drift between the
+checked-in artifact and the Python generator.
+
+The schema and runtime loader share field names, environment values, URI/digest patterns and scalar
+bounds. Standard JSON Schema cannot compare sibling numeric fields, so the runtime loader remains
+authoritative for `min_replicas <= replicas <= max_replicas`. The schema is early feedback, not a
+replacement for runtime validation or the production policy checks below.
 
 ## Policy examples
 
